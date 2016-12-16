@@ -1,0 +1,14 @@
+dn: uid=jdoe@nodomain,dc=nodomain
+uid: jdoe@nodomain
+cn: jdoe
+sn: 3
+objectClass: top
+objectClass: posixAccount
+objectClass: inetOrgPerson
+loginShell: /bin/bash
+homeDirectory: /home/jdoe
+uidNumber: 14583102
+gidNumber: 14564100
+userPassword: {SSHA}XaulN9NTX6LXtMEEC00/rQOlc1lkyKO9
+mail: jdoe@nodomain
+gecos: John Doe

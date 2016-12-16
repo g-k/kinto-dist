@@ -6,7 +6,8 @@ DEV_STAMP = $(VENV)/.dev_env_installed.stamp
 INSTALL_STAMP = $(VENV)/.install.stamp
 TEMPDIR := $(shell mktemp -d)
 
-.PHONY: all install migrate serve virtualenv
+.PHONY: all install migrate serve virtualenv \
+	docker-ldap-shell start-docker-ldap rm-docker-ldap
 
 OBJECTS = .venv .coverage
 
@@ -53,3 +54,26 @@ clean:
 	rm -fr build/ dist/ .tox .venv
 	find . -name '*.pyc' -delete
 	find . -name '__pycache__' -type d | xargs rm -fr
+
+tests-once: install-dev
+	$(VENV)/bin/py.test --cov-report term-missing --cov-fail-under 100 --cov kinto_admin
+
+start-docker-ldap:  # enables sign in as: jdoe@nodomain with password: test
+	docker run \
+		--detach \
+		--name kinto-dist-ldap \
+		-p 389:389 \
+		--env LDAP_ORGANISATION="kinto-dist-test" \
+		--env LDAP_DOMAIN="nodomain" \
+		--env LDAP_ADMIN_PASSWORD="kinto" \
+		osixia/openldap:1.1.7 \
+		--loglevel info
+	docker cp jdoe.ldif kinto-dist-ldap:/
+	sleep 1 && \
+		docker exec -t kinto-dist-ldap ldapadd -x -D "cn=admin,dc=nodomain" -w kinto -f /jdoe.ldif
+
+rm-docker-ldap:
+	docker rm -f kinto-dist-ldap
+
+docker-ldap-shell:
+	docker exec -ti kinto-dist-ldap bash
